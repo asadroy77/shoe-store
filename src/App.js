@@ -1,25 +1,60 @@
-import logo from './logo.svg';
 import './App.css';
+import Navbar from './components/Navbar/Navbar';
+import { Products } from './components/Products/Products';
+import { commerce } from './lib/commerce';
+import { BrowserRouter, Outlet , Routes, Route, Link,useParams } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import Cart from "./components/Cart/Cart";
+
+
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+  const [shoes,setShoes] = useState([]);
+  const [cart,setCart] = useState({});
+
+
+ const fetchdata= async()=>{
+  const{data} = await commerce.products.list();
+  setShoes(data)
+ }
+
+const fetchcart = async()=> {
+  setCart(await commerce.cart.retrieve())
 }
+
+const addtocarthandler = async(product_id,quantity)=>{
+  const item = await commerce.cart.add(product_id,quantity)
+console.log(item)
+  setCart(item)
+}
+
+
+
+ useEffect(()=>{
+
+  fetchdata()
+  fetchcart()
+ },[])
+
+
+
+  return (<>
+  <BrowserRouter>
+  <Navbar total = {cart.total_items}></Navbar >
+  <Routes>
+
+
+    <Route path='/' element={<Products shoes={shoes} addtocarthandler={addtocarthandler}></Products>}></Route>
+
+    <Route path='/cart' element={ <Cart cart={cart}></Cart>}></Route>
+  
+     
+
+  </Routes>
+</BrowserRouter>
+  </>)
+}
+
 
 export default App;
